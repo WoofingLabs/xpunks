@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPUNKS NFT Staking - X Layer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #121212; 
+            color: #E6E6E6; 
+            padding: 20px; 
+            min-height: 100vh; 
+            line-height: 1.5; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            background: #1A1A1A; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
+        }
+        h1 { 
+            text-align: center; 
+            color: #00BFA5; 
+            font-size: clamp(1.8em, 5vw, 2.2em); 
+            margin-bottom: 25px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+        }
+        .section { 
+            background: #222222; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #00BFA5; 
+        }
+        h2 { 
+            color: #00BFA5; 
+            font-size: clamp(1.2em, 3.5vw, 1.6em); 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+        }
+        .button { 
+            background: #00BFA5; 
+            color: #121212; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            margin: 5px 0; 
+            width: 100%; 
+        }
+        .button:hover:not(:disabled) { 
+            background: #009688; 
+            transform: translateY(-2px); 
+        }
+        .button:disabled { 
+            background: #444; 
+            color: #777; 
+            cursor: not-allowed; 
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #00BFA5; 
+            border-radius: 6px; 
+            background: #2A2A2A; 
+            color: #E6E6E6; 
+            font-size: 1em; 
+        }
+        input::placeholder { 
+            color: #666; 
+        }
+        .status { 
+            margin-top: 10px; 
+            font-size: 0.9em; 
+            color: #00BFA5; 
+            text-align: center; 
+            word-break: break-all; 
+        }
+        .wallet-info { 
+            color: #00BFA5; 
+            font-weight: 600; 
+            word-break: break-all; 
+        }
+        .balance { 
+            font-size: 1em; 
+            color: #00BFA5; 
+            text-align: center; 
+            margin: 10px 0; 
+            font-weight: 600; 
+        }
+        .note { 
+            font-size: 0.9em; 
+            color: #666; 
+            margin-top: 5px; 
+        }
+        .spinner { 
+            display: inline-block; 
+            width: 18px; 
+            height: 18px; 
+            border: 3px solid #E6E6E6; 
+            border-top: 3px solid #00BFA5; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin-left: 8px; 
+            vertical-align: middle; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        .how-it-works { 
+            background: #222222; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #00BFA5; 
+        }
+        .how-it-works ul { 
+            list-style-type: disc; 
+            padding-left: 20px; 
+            margin-top: 10px; 
+        }
+        .how-it-works li { 
+            margin-bottom: 12px; 
+            font-size: 0.9em; 
+        }
+        .how-it-works .highlight { 
+            color: #00BFA5; 
+            font-weight: 600; 
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 20px; 
+            font-size: 0.85em; 
+            color: #666; 
+        }
+        .footer a { 
+            color: #00BFA5; 
+            text-decoration: none; 
+        }
+        .footer a:hover { 
+            text-decoration: underline; 
+        }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .section, .how-it-works { padding: 15px; }
+            .button { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XPUNKS NFT Staking</h1>
+        <div class="section">
+            <h2>Connect to X Layer</h2>
+            <button id="connectButton" class="button">Connect Wallet</button>
+            <p>Wallet: <span id="walletAddress" class="wallet-info">Not connected</span></p>
+            <div id="networkStatus" class="status">Click to connect...</div>
+            <div id="balance" class="balance">XPUNKS Balance: 0</div>
+        </div>
+        <div class="section">
+            <h2>Stake NFTs</h2>
+            <button id="fillNFTIdsButton" class="button" disabled>Fill My NFT IDs</button>
+            <input type="text" id="stakeTokenIdsInput" placeholder="e.g., 1,2,3">
+            <div class="note">Enter comma-separated NFT IDs or use "Fill My NFT IDs". Approve contract if prompted.</div>
+            <button id="stakeButton" class="button" disabled>Stake NFTs</button>
+            <div id="stakeStatus" class="status"></div>
+        </div>
+        <div class="section">
+            <h2>Redeem NFTs</h2>
+            <input type="number" id="redeemCountInput" placeholder="e.g., 1" min="1">
+            <div class="note">1 NFT = 100,000 XPUNKS. Required: <span id="requiredTokens">0</span> XPUNKS</div>
+            <button id="redeemButton" class="button" disabled>Redeem NFTs</button>
+            <div id="redeemStatus" class="status"></div>
+        </div>
+        <div class="how-it-works">
+            <h2>How It Works?</h2>
+            <p>Stake your NFTs to earn XPUNKS tokens or redeem them back on X Layer:</p>
+            <ul>
+                <li><strong>Connect Wallet</strong>: Use MetaMask to connect to X Layer (chain ID: 196). Ensure you have enough <span class="highlight">OKB</span> for gas fees.</li>
+                <li><strong>Stake NFTs</strong>: Enter NFT IDs or click "Fill My NFT IDs" to auto-fetch up to 100 NFTs. Approve the contract and stake to receive <span class="highlight">100,000 XPUNKS</span> per NFT.</li>
+                <li><strong>Redeem NFTs</strong>: Enter the number of NFTs to redeem (1 NFT = 100,000 XPUNKS). Ensure sufficient XPUNKS balance.</li>
+                <li><strong>Secure & Fast</strong>: Built on X Layer for low fees and secure transactions.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            Powered by <a href="https://www.okx.com/web3/explorer/xlayer" target="_blank">X Layer</a> | XPUNKS Staking © 2025
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, account, xpunksContract, nftContract;
+        const xpunksAddress = "0xf01eAf833c0F23f278d7ebE9A592084915B625a9";
+        const nftContractAddress = "0xDCbd4058aD68f945D68Cc5a8AD4E5195EAdaD89C";
+        const TOKENS_PER_NFT = 100000 * 10**18;
+        const xLayer = {
+            chainId: 196,
+            name: 'X Layer mainnet',
+            explorerUrl: 'https://www.okx.com/web3/explorer/xlayer',
+            rpcUrl: 'https://rpc.xlayer.tech'
+        };
+        const xpunksABI = [
+            {
+                inputs: [{ internalType: "uint256[]", name: "tokenIds", type: "uint256[]" }],
+                name: "batchStakeNFTs",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                inputs: [{ internalType: "uint256", name: "count", type: "uint256" }],
+                name: "batchRedeemNFTs",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                inputs: [{ internalType: "address", name: "account", type: "address" }],
+                name: "balanceOf",
+                outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "user", type: "address" },
+                    { indexed: false, internalType: "uint256", name: "tokenId", type: "uint256" }
+                ],
+                name: "NFTStaked",
+                type: "event"
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "user", type: "address" },
+                    { indexed: false, internalType: "uint256", name: "tokenId", type: "uint256" }
+                ],
+                name: "NFTRedeemed",
+                type: "event"
+            }
+        ];
+        const nftABI = [
+            {
+                inputs: [
+                    { internalType: "address", name: "operator", type: "address" },
+                    { internalType: "bool", name: "approved", type: "bool" }
+                ],
+                name: "setApprovalForAll",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "owner", type: "address" },
+                    { internalType: "address", name: "operator", type: "address" }
+                ],
+                name: "isApprovedForAll",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                inputs: [{ internalType: "address", name: "owner", type: "address" }],
+                name: "balanceOf",
+                outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "owner", type: "address" },
+                    { internalType: "uint256", name: "index", type: "uint256" }
+                ],
+                name: "tokenOfOwnerByIndex",
+                outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+                stateMutability: "view",
+                type: "function"
+            }
+        ];
+
+        function updateButtons() {
+            const stakeButton = document.getElementById('stakeButton');
+            const redeemButton = document.getElementById('redeemButton');
+            const fillNFTIdsButton = document.getElementById('fillNFTIdsButton');
+            const stakeTokenIdsInput = document.getElementById('stakeTokenIdsInput').value;
+            const redeemCountInput = document.getElementById('redeemCountInput').value;
+            stakeButton.disabled = !account || !stakeTokenIdsInput.trim();
+            redeemButton.disabled = !account || !redeemCountInput.trim() || parseInt(redeemCountInput) <= 0;
+            fillNFTIdsButton.disabled = !account;
+            updateRequiredTokens();
+        }
+
+        function updateRequiredTokens() {
+            const redeemCountInput = document.getElementById('redeemCountInput').value;
+            const count = parseInt(redeemCountInput) || 0;
+            const requiredTokens = (count * TOKENS_PER_NFT) / 10**18;
+            document.getElementById('requiredTokens').innerText = requiredTokens.toLocaleString();
+        }
+
+        async function fetchXPUNKSBalance() {
+            if (!account || !xpunksContract) return;
+            try {
+                const balance = await xpunksContract.methods.balanceOf(account).call();
+                const balanceInTokens = Number(balance) / 10**18;
+                document.getElementById('balance').innerText = `XPUNKS Balance: ${balanceInTokens.toLocaleString()}`;
+            } catch (error) {
+                document.getElementById('balance').innerText = 'XPUNKS Balance: Error';
+            }
+        }
+
+        async function connectWallet() {
+            const status = document.getElementById('networkStatus');
+            try {
+                if (!window.ethereum) {
+                    status.innerHTML = 'No wallet detected. Please install <a href="https://metamask.io" target="_blank">MetaMask</a>.';
+                    return;
+                }
+                status.innerText = "Connecting...";
+                web3 = new Web3(window.ethereum);
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                account = accounts[0];
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== 196) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xc4' }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0xc4',
+                                    chainName: 'X Layer mainnet',
+                                    nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
+                                    rpcUrls: ['https://rpc.xlayer.tech'],
+                                    blockExplorerUrls: ['https://www.okx.com/web3/explorer/xlayer']
+                                }]
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+                document.getElementById('walletAddress').innerText = `${account.slice(0, 6)}...${account.slice(-4)}`;
+                xpunksContract = new web3.eth.Contract(xpunksABI, xpunksAddress);
+                nftContract = new web3.eth.Contract(nftABI, nftContractAddress);
+                status.innerText = "Connected to X Layer";
+                await fetchXPUNKSBalance();
+                updateButtons();
+            } catch (error) {
+                status.innerText = "Failed to connect: " + error.message;
+            }
+        }
+
+        async function waitForTransaction(txHash) {
+            let receipt = null;
+            const maxAttempts = 60;
+            let attempts = 0;
+            while (attempts < maxAttempts) {
+                receipt = await web3.eth.getTransactionReceipt(txHash);
+                if (receipt) {
+                    if (receipt.status) return receipt;
+                    throw new Error(`Transaction ${txHash} failed`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                attempts++;
+            }
+            throw new Error(`Transaction ${txHash} not confirmed after ${maxAttempts} attempts`);
+        }
+
+        async function approveNFTs() {
+            const status = document.getElementById('stakeStatus');
+            try {
+                const isApproved = await nftContract.methods.isApprovedForAll(account, xpunksAddress).call();
+                if (!isApproved) {
+                    status.innerText = 'Approving contract to manage NFTs...';
+                    const gasPrice = await web3.eth.getGasPrice();
+                    const adjustedGasPrice = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(15)).div(web3.utils.toBN(10));
+                    const tx = await nftContract.methods.setApprovalForAll(xpunksAddress, true).send({
+                        from: account,
+                        gas: '200000',
+                        gasPrice: adjustedGasPrice
+                    });
+                    await waitForTransaction(tx.transactionHash);
+                    status.innerText = 'Contract approved successfully!';
+                    return true;
+                }
+                return true;
+            } catch (error) {
+                status.innerText = `Approval failed: ${error.message}`;
+                return false;
+            }
+        }
+
+        async function fetchUserNFTs() {
+            const status = document.getElementById('stakeStatus');
+            try {
+                status.innerText = 'Fetching your NFT IDs...';
+                const balance = await nftContract.methods.balanceOf(account).call();
+                const tokenIds = [];
+                for (let i = 0; i < balance; i++) {
+                    const tokenId = await nftContract.methods.tokenOfOwnerByIndex(account, i).call();
+                    tokenIds.push(Number(tokenId));
+                }
+                return tokenIds;
+            } catch (error) {
+                status.innerText = `Failed to fetch NFTs: ${error.message}`;
+                return [];
+            }
+        }
+
+        async function fillNFTIds() {
+            const status = document.getElementById('stakeStatus');
+            const fillNFTIdsButton = document.getElementById('fillNFTIdsButton');
+            const stakeTokenIdsInput = document.getElementById('stakeTokenIdsInput');
+            if (!account) {
+                status.innerText = 'Please connect wallet first.';
+                return;
+            }
+            try {
+                fillNFTIdsButton.disabled = true;
+                fillNFTIdsButton.innerHTML = 'Fetching... <span class="spinner"></span>';
+                const tokenIds = await fetchUserNFTs();
+                if (tokenIds.length === 0) {
+                    status.innerText = 'No NFTs found in your wallet.';
+                    stakeTokenIdsInput.value = '';
+                } else {
+                    const selectedIds = tokenIds.length > 100 ? tokenIds.slice(0, 100) : tokenIds;
+                    stakeTokenIdsInput.value = selectedIds.join(',');
+                    status.innerText = `Filled ${selectedIds.length} NFT ID(s) successfully!`;
+                }
+                updateButtons();
+            } catch (error) {
+                status.innerText = `Error filling NFT IDs: ${error.message}`;
+            } finally {
+                fillNFTIdsButton.disabled = false;
+                fillNFTIdsButton.innerHTML = 'Fill My NFT IDs';
+            }
+        }
+
+        async function stakeNFTs() {
+            const status = document.getElementById('stakeStatus');
+            const stakeButton = document.getElementById('stakeButton');
+            const stakeTokenIdsInput = document.getElementById('stakeTokenIdsInput').value;
+            if (!account) {
+                status.innerText = 'Please connect wallet first.';
+                return;
+            }
+            if (!stakeTokenIdsInput.trim()) {
+                status.innerText = 'Please enter NFT token IDs.';
+                return;
+            }
+            const tokenIds = stakeTokenIdsInput.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+            if (tokenIds.length === 0) {
+                status.innerText = 'Invalid token IDs.';
+                return;
+            }
+            if (tokenIds.length > 100) {
+                status.innerText = 'Maximum 100 NFTs can be staked at once.';
+                return;
+            }
+            try {
+                stakeButton.disabled = true;
+                stakeButton.innerHTML = 'Approving... <span class="spinner"></span>';
+                const approved = await approveNFTs();
+                if (!approved) {
+                    stakeButton.disabled = false;
+                    stakeButton.innerHTML = 'Stake NFTs';
+                    return;
+                }
+                stakeButton.innerHTML = 'Staking... <span class="spinner"></span>';
+                status.innerText = `Staking ${tokenIds.length} NFT(s)...`;
+                const gasPrice = await web3.eth.getGasPrice();
+                const adjustedGasPrice = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(15)).div(web3.utils.toBN(10));
+                const tx = await xpunksContract.methods.batchStakeNFTs(tokenIds).send({
+                    from: account,
+                    gas: '10000000',
+                    gasPrice: adjustedGasPrice
+                });
+                status.innerHTML = `Transaction submitted. <a href="${xLayer.explorerUrl}/tx/${tx.transactionHash}" target="_blank">View on Explorer</a>`;
+                await waitForTransaction(tx.transactionHash);
+                status.innerText = `${tokenIds.length} NFT(s) staked successfully!`;
+                document.getElementById('stakeTokenIdsInput').value = '';
+                await fetchXPUNKSBalance();
+            } catch (error) {
+                let errorMessage = error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message;
+                if (error.code === 4001) {
+                    status.innerText = 'Transaction canceled by user.';
+                } else {
+                    status.innerText = `Stake failed: ${errorMessage}`;
+                }
+            } finally {
+                stakeButton.disabled = false;
+                stakeButton.innerHTML = 'Stake NFTs';
+                updateButtons();
+            }
+        }
+
+        async function redeemNFTs() {
+            const status = document.getElementById('redeemStatus');
+            const redeemButton = document.getElementById('redeemButton');
+            const redeemCountInput = document.getElementById('redeemCountInput').value;
+            if (!account) {
+                status.innerText = 'Please connect wallet first.';
+                return;
+            }
+            const count = parseInt(redeemCountInput);
+            if (isNaN(count) || count <= 0) {
+                status.innerText = 'Please enter a valid count.';
+                return;
+            }
+            if (count > 100) {
+                status.innerText = 'Maximum 100 NFTs can be redeemed at once.';
+                return;
+            }
+            try {
+                redeemButton.disabled = true;
+                redeemButton.innerHTML = 'Redeeming... <span class="spinner"></span>';
+                status.innerText = `Redeeming ${count} NFT(s)...`;
+                const gasPrice = await web3.eth.getGasPrice();
+                const adjustedGasPrice = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(15)).div(web3.utils.toBN(10));
+                const tx = await xpunksContract.methods.batchRedeemNFTs(count).send({
+                    from: account,
+                    gas: '10000000',
+                    gasPrice: adjustedGasPrice
+                });
+                status.innerHTML = `Transaction submitted. <a href="${xLayer.explorerUrl}/tx/${tx.transactionHash}" target="_blank">View on Explorer</a>`;
+                await waitForTransaction(tx.transactionHash);
+                status.innerText = `${count} NFT(s) redeemed successfully!`;
+                document.getElementById('redeemCountInput').value = '';
+                await fetchXPUNKSBalance();
+            } catch (error) {
+                let errorMessage = error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message;
+                if (error.code === 4001) {
+                    status.innerText = 'Transaction canceled by user.';
+                } else {
+                    status.innerText = `Redeem failed: ${errorMessage}`;
+                }
+            } finally {
+                redeemButton.disabled = false;
+                redeemButton.innerHTML = 'Redeem NFTs';
+                updateButtons();
+            }
+        }
+
+        document.getElementById('connectButton').addEventListener('click', connectWallet);
+        document.getElementById('fillNFTIdsButton').addEventListener('click', fillNFTIds);
+        document.getElementById('stakeButton').addEventListener('click', stakeNFTs);
+        document.getElementById('redeemButton').addEventListener('click', redeemNFTs);
+        document.getElementById('stakeTokenIdsInput').addEventListener('input', updateButtons);
+        document.getElementById('redeemCountInput').addEventListener('input', updateButtons);
+
+        window.addEventListener('load', () => {
+            if (!window.location.protocol.startsWith('http')) {
+                document.getElementById('networkStatus').innerHTML = 'Please run this page via a local server (e.g., "npx serve") to connect MetaMask.';
+            } else if (!window.ethereum) {
+                document.getElementById('networkStatus').innerHTML = 'No wallet detected. Please install <a href="https://metamask.io">MetaMask</a>.';
+            }
+        });
+    </script>
+</body>
+</html>
